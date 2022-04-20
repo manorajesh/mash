@@ -6,7 +6,7 @@ import os
 try:
     while True:
         try:
-            usrInput = input("{} @ mash ~ $ ".format(os.getcwd()))
+            usrInput = input(f"{os.getcwd()} @ mash ~ $ ")
             if usrInput == "":
                 continue
             elif usrInput == "exit":
@@ -49,6 +49,6 @@ try:
                 print(f"\nSyntaxError: invalid syntax\n\t'{usrInput}' is not a valid command\n")
         except PermissionError:
             print(f"\nPermissionError: cannot access '{usrInput.split()[1]}'\n")
-except KeyboardInterrupt as ki:
+except KeyboardInterrupt:
     print(f"\nKeyboardInterrupt: exiting\n")
     exit()
