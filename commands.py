@@ -10,7 +10,7 @@ def help():
     exit - exit the program
     echo - echo the input to standard output
     manote - text editor
-    ls - list the files in the current directory
+    ls - list the files in the current directory or in the specified directory
     rm - remove the file
     cd - change the current working directory
     cls - clear the screen
@@ -87,8 +87,8 @@ def manote_deprecated(filename):
         else:
             print(f"\nmanote: unrecognized command\n\t'{usrInput}' is not a valid command\n")
 
-def ls():
-    print("\n".join(os.listdir()))
+def ls(dirname=None):
+    print("\n".join(os.listdir(dirname)))
 
 def rm(filename, force=False):
     if os.path.isdir(os.path.abspath(filename)):

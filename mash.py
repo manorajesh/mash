@@ -21,7 +21,10 @@ try:
                 except IndexError:
                     print("\nSyntaxError: invalid syntax\n\t'manote' requires an argument\n")
             elif usrInput.split()[0] == "ls":
-                ls()
+                try:
+                    ls(usrInput.split()[1])
+                except IndexError:
+                    ls()
             elif usrInput.split()[0] == "rm":
                 try:
                     if usrInput.split()[1] == "-f":
