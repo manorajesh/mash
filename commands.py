@@ -1,5 +1,5 @@
 import os
-import readchar
+import readchar as rc
 
 def echo(usrInput):
     print(" ".join(usrInput.split()[1:]))
@@ -33,10 +33,11 @@ def manote(filename):
     # \x18 == CTRL-X
     # Enter does not work properly
 
-    while keyInput != "\x11" or keyInput != "\x18":
+    print('\033[?25l', end="") # remove cursor
+    while keyInput != rc.key.CTRL_Q or keyInput != rc.key.CTRL_X:
         os.system("clear")
         print(textBuffer + "█")
-        keyInput = readchar.readkey()
+        keyInput = rc.readkey()
 
         if keyInput == "\x7f":
             textBuffer = textBuffer[0:len(textBuffer)-1]
@@ -47,7 +48,9 @@ def manote(filename):
     
     # save file if combo was CRTL+X
     # quit program if combo was CRTL+Q
-    if keyInput == "\x18":
+
+    print('\033[?25h', end="") # show cursor
+    if keyInput == rc.key.CTRL_X:
         file.close()
         file = open(filename, "w")
         file.write(textBuffer)
