@@ -41,7 +41,7 @@ def manote(filename):
         if keyInput == "\x7f":
             textBuffer = textBuffer[0:len(textBuffer)-1]
         elif keyInput == "\r":
-            textBuffer = textBuffer + "\n"
+            textBuffer += "\n"
         else:
             textBuffer += keyInput
     

@@ -1,11 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <ncurses.h>
+#include <string.h>
 
 #define esc 27
 #define backspace 8
-#define MAXLINE 10000
+#define MAXLINE 1024
 
-void manote(char filename)
+void manote(char filename[])
 {
     FILE *f;
     char c;
@@ -27,41 +29,45 @@ void manote(char filename)
     }
 
     // reading the file
-    for(i = 0; text_buffer[i] != EOF; i++)
-    {
-        text_buffer[i] = fgetc(f);
-    }
+    fread(text_buffer, sizeof(char), MAXLINE, f);
 
     // User input
-    i = 0;
-    while((c = getch()) != esc && i < MAXLINE)
+    i = strlen(text_buffer);
+    c = 0;
+    printf("%s", text_buffer);
+    while((int) text_buffer[i] != esc && i < MAXLINE)
     {
-        clrsrc();
-        printf("%s", text_buffer);
+        initscr();
+        cbreak(); 
 
-        if(c == '\n')
+        system("clear");
+        text_buffer[i] = getch();
+
+        if((int) text_buffer[i] == backspace)
+        {
+            text_buffer[i] = '\0';
+            i--;
+            continue;
+        } else if(text_buffer[i] == '\r')
         {
             text_buffer[i] = '\n';
         }
-        else if(c == backspace)
-        {
-            // Handle backspace
-            if(i > 0)
-            {
-                text_buffer[i] = '\0';
-                --i;
-            }
-        }
-        else
-        {
-            text_buffer[i] = c;
-            i++;
-        }
+        i++;
     }
+    endwin();
+
+    f = fopen(filename, "w");
+    if (f == NULL)
+    {
+        printf("Error opening file\n");
+        exit(1);
+    }
+    fwrite(text_buffer, sizeof(char), strlen(text_buffer), f);
 }
 
 int main()
 {
-    manote("D:\\mano\\code\\mash\\README.md");
+    char path[] = "birdee";
+    manote(path);
     return 0;
 }
