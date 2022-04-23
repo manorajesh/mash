@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <ncurses.h>
+#include <conio.h>
 #include <string.h>
 
 #define esc 27
@@ -33,17 +33,13 @@ void manote(char filename[])
 
     // User input
     i = strlen(text_buffer);
-    c = 0;
     printf("%s", text_buffer);
-    while((int) text_buffer[i] != esc && i < MAXLINE)
+    while(text_buffer[i] != esc && i < MAXLINE)
     {
-        initscr();
-        cbreak(); 
+        system("cls");
+        text_buffer[i] = _getch();
 
-        system("clear");
-        text_buffer[i] = getch();
-
-        if((int) text_buffer[i] == backspace)
+        if(text_buffer[i] == backspace)
         {
             text_buffer[i] = '\0';
             i--;
@@ -54,7 +50,6 @@ void manote(char filename[])
         }
         i++;
     }
-    endwin();
 
     f = fopen(filename, "w");
     if (f == NULL)
