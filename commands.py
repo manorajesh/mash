@@ -1,5 +1,7 @@
+from fileinput import filename
 import os
 import readchar as rc
+import sys
 
 def echo(usrInput):
     print(" ".join(usrInput.split()[1:]))
@@ -20,6 +22,68 @@ def help():
 ## Simple text editor
 ## Extremely high CPU usage (30%) because of the readchar.readkey() function
 ## The function detects each keypress and invokes a code block
+
+class Manote_Object:
+    def __init__(self, filename):
+        try:
+            file = open(filename, "r")
+            textBuffer = file.read()
+        except FileNotFoundError:
+            textBuffer = ''
+        self.commandMode()
+
+    def save(self):
+        global filename
+        global textBuffer
+        global file
+
+        print('\033[?25h', end="") # show cursor
+        file.close()
+        file = open(filename, "w")
+        file.write(textBuffer)
+        file.close()
+
+    def quit(self):
+        global file
+        print('\033[?25h', end="") # show cursor
+        try:
+            file.close()
+        except NameError:
+            pass
+
+    def writeMode(self):
+        global textBuffer
+        keyInput = ''
+        # \x11 == CTRL-Q
+        # \x18 == CTRL-X
+        # Enter does not work properly
+
+        print('\033[?25l', end="") # remove cursor
+        while keyInput != rc.key.ESC:
+            os.system("clear")
+            print(textBuffer + "█")
+            keyInput = rc.readkey()
+
+            if keyInput == "\x7f":
+                textBuffer = textBuffer[:-1]
+            elif keyInput == "\r":
+                textBuffer += "\n"
+            else:
+                textBuffer += keyInput
+        self.commandMode()
+    
+    def commandMode(self):
+        usrInput = input("\n\n:")
+        if usrInput == "x":
+            self.save()
+        elif usrInput == "q":
+            self.quit()
+        elif usrInput == "w":
+            self.writeMode()
+        else:
+            print("\nSyntaxError: invalid syntax\n\t'{}' is not a valid command\n".format(usrInput))
+            self.commandMode()
+
 
 def manote(filename):
     try:
