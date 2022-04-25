@@ -1,21 +1,24 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <ncurses.h>
+#include <conio.h>
 #include <string.h>
+
+#pragma warning(disable : 4996)
 
 #define esc 27
 #define backspace 8
+#define CTRL_Q 17
 #define MAXLINE 1024
 
 void manote(char filename[])
 {
-    FILE *f;
-    char c;
+    FILE *f; 
+    char c = 0;
     char text_buffer[MAXLINE];
     int i;
 
     // Open file
-    f = fopen(filename, "r");
+    f = fopen(filename, "w+");
     if (f == NULL)
     {
         printf("Error opening file\n");
@@ -23,7 +26,7 @@ void manote(char filename[])
     }
 
     // "zeroing" the buffer
-    for(i = 0; i < MAXLINE; i++)
+    for (i = 0; i < MAXLINE; i++)
     {
         text_buffer[i] = '\0';
     }
@@ -32,42 +35,54 @@ void manote(char filename[])
     fread(text_buffer, sizeof(char), MAXLINE, f);
 
     // User input
+    // Enter isn't working properly
     i = strlen(text_buffer);
-    c = 0;
-    printf("%s", text_buffer);
-    while((int) text_buffer[i] != esc && i < MAXLINE)
+    while (i < MAXLINE)
     {
-        initscr();
-        cbreak(); 
+        system("cls");
+        printf("%s", text_buffer);
+        text_buffer[i] = _getch();
 
-        system("clear");
-        text_buffer[i] = getch();
-
-        if((int) text_buffer[i] == backspace)
+        if (text_buffer[i] == backspace && i > 0)
         {
             text_buffer[i] = '\0';
+            text_buffer[i-1] = '\0';
             i--;
             continue;
-        } else if(text_buffer[i] == '\r')
-        {
-            text_buffer[i] = '\n';
         }
-        i++;
+        else if (text_buffer[i] == '\r')
+        {
+            text_buffer[i] == '\n';
+        }
+        else if (text_buffer[i] == esc || text_buffer[i] == CTRL_Q)
+        {
+            break;
+        }
+        else {
+            i++;
+        }
     }
-    endwin();
 
-    f = fopen(filename, "w");
-    if (f == NULL)
+    if (text_buffer[i] == esc)
     {
-        printf("Error opening file\n");
-        exit(1);
+        text_buffer[i] = '\0';
+        fwrite(text_buffer, sizeof(char), strlen(text_buffer), f);
+        printf("\nWrote to file\n");
     }
-    fwrite(text_buffer, sizeof(char), strlen(text_buffer), f);
+    else if (text_buffer[i] == CTRL_Q)
+    {
+        printf("\nExited without saving");
+    }
+    else
+    {
+        printf("\nThere was an error saving the file\n\
+            Enter either esc to save or CTRL+Q to quit without saving");
+    }
 }
 
 int main()
 {
-    char path[] = "birdee";
+    char path[] = "D:\\mano\\code\\manote\\birdee";
     manote(path);
     return 0;
 }
