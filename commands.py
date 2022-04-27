@@ -2,6 +2,7 @@ from fileinput import filename
 import os
 import readchar as rc
 import sys
+import tty
 
 def echo(usrInput):
     print(" ".join(usrInput.split()[1:]))
@@ -30,14 +31,13 @@ class Manote_Object:
             textBuffer = file.read()
         except FileNotFoundError:
             textBuffer = ''
-        self.commandMode()
+        self.commandMode(textBuffer)
 
     def save(self):
         global filename
         global textBuffer
         global file
-
-        print('\033[?25h', end="") # show cursor
+        
         file.close()
         file = open(filename, "w")
         file.write(textBuffer)
@@ -45,83 +45,36 @@ class Manote_Object:
 
     def quit(self):
         global file
-        print('\033[?25h', end="") # show cursor
         try:
             file.close()
         except NameError:
             pass
 
-    def writeMode(self):
-        global textBuffer
-        keyInput = ''
-        # \x11 == CTRL-Q
-        # \x18 == CTRL-X
-        # Enter does not work properly
-
-        print('\033[?25l', end="") # remove cursor
-        while keyInput != rc.key.ESC:
-            os.system("clear")
-            print(textBuffer + "█")
-            keyInput = rc.readkey()
-
-            if keyInput == "\x7f":
-                textBuffer = textBuffer[:-1]
-            elif keyInput == "\r":
-                textBuffer += "\n"
-            else:
-                textBuffer += keyInput
-        self.commandMode()
+    def writeMode(self, textBuffer):
+        tty.setraw(sys.stdin)
+        while True:
+            char = ord(sys.stdin.read(1))
+            if char == 27:
+                self.commandMode(textBuffer)
+                break
+            elif 32 <= char <= 126:
+                textBuffer += chr(char)
+            elif char == {10, 32}:
+                textBuffer += '\n'
+                sys.stdout.write(u"\u001b[1000D")
+            sys.stdout.write(u"\u001b[1000D") # Move all the way left
     
-    def commandMode(self):
+    def commandMode(self, textBuffer):
         usrInput = input("\n\n:")
         if usrInput == "x":
             self.save()
         elif usrInput == "q":
             self.quit()
         elif usrInput == "w":
-            self.writeMode()
+            self.writeMode(textBuffer)
         else:
             print("\nSyntaxError: invalid syntax\n\t'{}' is not a valid command\n".format(usrInput))
             self.commandMode()
-
-
-def manote(filename):
-    try:
-        file = open(filename, "r")
-    except FileNotFoundError:
-        file = open(filename, "r+")
-    textBuffer = file.read()
-
-    keyInput = ''
-    # \x11 == CTRL-Q
-    # \x18 == CTRL-X
-    # Enter does not work properly
-
-    print('\033[?25l', end="") # remove cursor
-    while keyInput != rc.key.CTRL_Q or keyInput != rc.key.CTRL_X:
-        os.system("clear")
-        print(textBuffer + "█")
-        keyInput = rc.readkey()
-
-        if keyInput == "\x7f":
-            textBuffer = textBuffer[0:len(textBuffer)-1]
-        elif keyInput == "\r":
-            textBuffer += "\n"
-        else:
-            textBuffer += keyInput
-    
-    # save file if combo was CRTL+X
-    # quit program if combo was CRTL+Q
-
-    print('\033[?25h', end="") # show cursor
-    if keyInput == rc.key.CTRL_X:
-        file.close()
-        file = open(filename, "w")
-        file.write(textBuffer)
-        file.close()
-    else:
-        file.close()
-        exit()
 
 def manote_deprecated(filename):
     print("\nWelcome to the manote, your one stop-shop for text editing\n")
@@ -155,7 +108,10 @@ def manote_deprecated(filename):
             print(f"\nmanote: unrecognized command\n\t'{usrInput}' is not a valid command\n")
 
 def ls(dirname=None):
-    print("\n".join(os.listdir(dirname)))
+    try:
+        print("\n".join(os.listdir(dirname)))
+    except FileNotFoundError:
+        print(f"\nDirectoryError: {dirname} is not a directory\n")
 
 def rm(filename, force=False):
     if os.path.isdir(os.path.abspath(filename)):
