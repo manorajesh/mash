@@ -1,8 +1,10 @@
 from commands import *
 import os
+import sys
 
 # MAno SHell - mash
 
+os.system("clear") # clear the screen
 try:
     while True:
         try:

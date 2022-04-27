@@ -1,5 +1,6 @@
 from fileinput import filename
 import os
+import tty
 import readchar as rc
 import sys
 
@@ -27,49 +28,41 @@ class Manote_Object:
     def __init__(self, filename):
         try:
             file = open(filename, "r")
-            textBuffer = file.read()
+            self.textBuffer = file.read()
         except FileNotFoundError:
-            textBuffer = ''
+            self.textBuffer = ''
         self.commandMode()
 
     def save(self):
-        global filename
-        global textBuffer
-        global file
-
         print('\033[?25h', end="") # show cursor
         file.close()
         file = open(filename, "w")
-        file.write(textBuffer)
+        file.write(self.textBuffer)
         file.close()
 
     def quit(self):
-        global file
         print('\033[?25h', end="") # show cursor
         try:
-            file.close()
+            self.file.close()
         except NameError:
             pass
 
     def writeMode(self):
-        global textBuffer
         keyInput = ''
-        # \x11 == CTRL-Q
-        # \x18 == CTRL-X
-        # Enter does not work properly
-
+        
+        tty.setraw(sys.stdin)
         print('\033[?25l', end="") # remove cursor
-        while keyInput != rc.key.ESC:
+        while keyInput != rc.key.ESC or keyInput != 27:
             os.system("clear")
-            print(textBuffer + "█")
+            print(self.textBuffer + "█")
             keyInput = rc.readkey()
 
             if keyInput == "\x7f":
-                textBuffer = textBuffer[:-1]
+                self.textBuffer = self.textBuffer[:-1]
             elif keyInput == "\r":
-                textBuffer += "\n"
+                self.textBuffer += "\n"
             else:
-                textBuffer += keyInput
+                self.textBuffer += keyInput
         self.commandMode()
     
     def commandMode(self):
