@@ -54,17 +54,25 @@ class Manote_Object:
         keyInput = ''
         
         print('\033[?25l', end="") # remove cursor
-        while keyInput == '' or ord(keyInput) != 27:
+        index = 0
+        while keyInput == '' or keyInput != chr(27):
             print("\033[2J\033[;H", end='') # clear the screen
-            print(self.textBuffer + "█")
+            print(self.textBuffer + "█" + u"\u001b[41m" + " " *  (len(self.textBuffer) - index) + u"\u001b[0m")
+            
             keyInput = rc.readkey()
 
             if keyInput == "\x7f":
                 self.textBuffer = self.textBuffer[:-1]
             elif keyInput == "\r":
                 self.textBuffer += "\n"
+            elif keyInput == "\x1b[A":
+                if index > 0:
+                    index -= 1
+            elif keyInput == "\x1b[B":
+                if index < len(self.textBuffer):
+                    index += 1
             else:
-                self.textBuffer += keyInput
+                self.textBuffer = self.textBuffer[index:] + keyInput + self.textBuffer[:index]
         self.commandMode()
     
     def commandMode(self):
@@ -81,6 +89,10 @@ class Manote_Object:
         else:
             print("\nSyntaxError: invalid syntax\n\t'{}' is not a valid command\n".format(usrInput))
             self.commandMode()
+    
+    def syntaxHighlight(self, input):
+        stripped = input.rstrip()
+        return stripped + u"\u001b[41m" + " " *  (len(input) - len(stripped)) + u"\u001b[0m" 
 
 
 def manote(filename):
@@ -102,7 +114,7 @@ def manote(filename):
         keyInput = rc.readkey()
 
         if keyInput == "\x7f":
-            textBuffer = textBuffer[0:len(textBuffer)-1]
+            textBuffer = textBuffer[:-1]
         elif keyInput == "\r":
             textBuffer += "\n"
         else:
