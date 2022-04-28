@@ -57,12 +57,13 @@ class Manote_Object:
         index = 0
         while keyInput == '' or keyInput != chr(27):
             print("\033[2J\033[;H", end='') # clear the screen
-            print(self.textBuffer + "█" + u"\u001b[41m" + " " *  (len(self.textBuffer) - index) + u"\u001b[0m")
+            print(self.textBuffer[index:] + "█")
             
             keyInput = rc.readkey()
 
             if keyInput == "\x7f":
                 self.textBuffer = self.textBuffer[:-1]
+                input -= 1
             elif keyInput == "\r":
                 self.textBuffer += "\n"
             elif keyInput == "\x1b[A":
