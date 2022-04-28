@@ -1,5 +1,4 @@
 import os
-from typing import Type
 import readchar as rc
 import sys
 import mash
@@ -55,20 +54,17 @@ class Manote_Object:
         keyInput = ''
         
         print('\033[?25l', end="") # remove cursor
-        try:
-            while ord(keyInput) != 27:
-                print("\033[2J\033[;H", end='') # clear the screen
-                print(self.textBuffer + "█")
-                keyInput = rc.readkey()
+        while keyInput == '' or ord(keyInput) != 27:
+            print("\033[2J\033[;H", end='') # clear the screen
+            print(self.textBuffer + "█")
+            keyInput = rc.readkey()
 
-                if keyInput == "\x7f":
-                    self.textBuffer = self.textBuffer[:-1]
-                elif keyInput == "\r":
-                    self.textBuffer += "\n"
-                else:
-                    self.textBuffer += keyInput
-        except TypeError:
-            print("\TypeError: invalid character\n\tis not a valid character\n")
+            if keyInput == "\x7f":
+                self.textBuffer = self.textBuffer[:-1]
+            elif keyInput == "\r":
+                self.textBuffer += "\n"
+            else:
+                self.textBuffer += keyInput
         self.commandMode()
     
     def commandMode(self):
@@ -195,6 +191,9 @@ def cat(filename):
         print(file.read())
     else:
         print(f"\nFileError: {filename} does not exist\n")
+
+def python(filename):
+    exec(open(filename).read())
 
 if __name__ == "__main__":
     mash.main()

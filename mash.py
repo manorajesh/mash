@@ -48,6 +48,11 @@ def main():
                         print("\nSyntaxError: invalid syntax\n\t'cat' requires an argument\n")
                 elif usrInput.split()[0] == "cls" or usrInput.split()[0] == "clr" or usrInput.split()[0] == "clear":
                     cls()
+                elif usrInput.split()[0] == "python":
+                    try:
+                        python(usrInput.split()[1])
+                    except IndexError:
+                        print("\nSyntaxError: invalid syntax\n\t'python' requires an argument\n")
                 else:
                     print(f"\nSyntaxError: invalid syntax\n\t'{usrInput}' is not a valid command\n")
             except PermissionError:
