@@ -1,8 +1,8 @@
-from fileinput import filename
 import os
-import tty
+from typing import Type
 import readchar as rc
 import sys
+import mash
 
 def echo(usrInput):
     print(" ".join(usrInput.split()[1:]))
@@ -26,47 +26,56 @@ def help():
 
 class Manote_Object:
     def __init__(self, filename):
+        self.filename = filename
         try:
-            file = open(filename, "r")
-            self.textBuffer = file.read()
+            self.file = open(filename, "r")
+            self.textBuffer = self.file.read()
         except FileNotFoundError:
             self.textBuffer = ''
         self.commandMode()
 
     def save(self):
         print('\033[?25h', end="") # show cursor
-        file.close()
-        file = open(filename, "w")
-        file.write(self.textBuffer)
-        file.close()
+        try:
+            self.file.close()
+        except AttributeError: # if the file doesn't exist
+            pass
+        self.file = open(self.filename, "w")
+        self.file.write(self.textBuffer)
+        self.file.close()
 
     def quit(self):
         print('\033[?25h', end="") # show cursor
         try:
             self.file.close()
-        except NameError:
+        except (NameError, AttributeError):
             pass
 
     def writeMode(self):
         keyInput = ''
         
-        tty.setraw(sys.stdin)
         print('\033[?25l', end="") # remove cursor
-        while keyInput != rc.key.ESC or keyInput != 27:
-            os.system("clear")
-            print(self.textBuffer + "█")
-            keyInput = rc.readkey()
+        try:
+            while ord(keyInput) != 27:
+                print("\033[2J\033[;H", end='') # clear the screen
+                print(self.textBuffer + "█")
+                keyInput = rc.readkey()
 
-            if keyInput == "\x7f":
-                self.textBuffer = self.textBuffer[:-1]
-            elif keyInput == "\r":
-                self.textBuffer += "\n"
-            else:
-                self.textBuffer += keyInput
+                if keyInput == "\x7f":
+                    self.textBuffer = self.textBuffer[:-1]
+                elif keyInput == "\r":
+                    self.textBuffer += "\n"
+                else:
+                    self.textBuffer += keyInput
+        except TypeError:
+            print("\TypeError: invalid character\n\tis not a valid character\n")
         self.commandMode()
     
     def commandMode(self):
-        usrInput = input("\n\n:")
+        print("\033[2J\033[;H", end='') # clear the screen
+        self.columns, self.lines = os.get_terminal_size()
+        print(self.textBuffer)
+        usrInput = input("\n" * self.lines + ":")
         if usrInput == "x":
             self.save()
         elif usrInput == "q":
@@ -176,7 +185,7 @@ def cd(path):
         print(f"\nDirectoryError: {path} is invalid\n")
 
 def cls():
-    os.system("clear")
+    print("\033[2J\033[;H", end='') # clear the screen
 
 def cat(filename):
     if os.path.isdir(filename):
@@ -186,3 +195,6 @@ def cat(filename):
         print(file.read())
     else:
         print(f"\nFileError: {filename} does not exist\n")
+
+if __name__ == "__main__":
+    mash.main()
