@@ -23,7 +23,7 @@ def help():
 ## Extremely high CPU usage (30%) because of the readchar.readkey() function
 ## The function detects each keypress and invokes a code block
 
-class Manote_Object:
+class Manote:
     def __init__(self, filename):
         self.filename = filename
         try:

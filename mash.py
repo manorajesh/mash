@@ -20,7 +20,7 @@ def main():
                     echo(usrInput)
                 elif usrInput.split()[0] == "manote":
                     try:
-                        manote = Manote_Object(usrInput.split()[1])
+                        manote = Manote(usrInput.split()[1])
                     except IndexError:
                         print("\nSyntaxError: invalid syntax\n\t'manote' requires an argument\n")
                 elif usrInput.split()[0] == "ls":
