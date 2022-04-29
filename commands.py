@@ -1,6 +1,4 @@
-from fileinput import filename
 import os
-import readchar as rc
 import sys
 import tty
 
@@ -26,52 +24,65 @@ def help():
 
 class Manote_Object:
     def __init__(self, filename):
+        self.filename = filename
         try:
-            file = open(filename, "r")
-            textBuffer = file.read()
+            self.file = open(filename, "r")
+            self.textBuffer = self.file.read()
         except FileNotFoundError:
-            textBuffer = ''
-        self.commandMode(textBuffer)
+            self.textBuffer = ''
+        self.commandMode()
 
     def save(self):
-        global filename
-        global textBuffer
-        global file
-        
-        file.close()
-        file = open(filename, "w")
-        file.write(textBuffer)
-        file.close()
+        print('\033[?25h', end="") # show cursor
+        try:
+            self.file.close()
+        except AttributeError: # if the file doesn't exist
+            pass
+        self.file = open(self.filename, "w")
+        self.file.write(self.textBuffer)
+        self.file.close()
 
     def quit(self):
-        global file
+        print('\033[?25h', end="") # show cursor
         try:
-            file.close()
-        except NameError:
+            self.file.close()
+        except (NameError, AttributeError):
             pass
 
-    def writeMode(self, textBuffer):
+    def writeMode(self):
         tty.setraw(sys.stdin)
+        index = 0
         while True:
+            sys.stdout.write(self.textBuffer)
             char = ord(sys.stdin.read(1))
             if char == 27:
-                self.commandMode(textBuffer)
+                self.commandMode()
                 break
             elif 32 <= char <= 126:
-                textBuffer += chr(char)
+                self.textBuffer += chr(char)
+                index += 1
             elif char == {10, 32}:
-                textBuffer += '\n'
+                self.textBuffer += '\n'
+                index += 1
                 sys.stdout.write(u"\u001b[1000D")
-            sys.stdout.write(u"\u001b[1000D") # Move all the way left
+            elif char == 68:
+                if index > 0:
+                    index -= 1
+            elif char == 67:
+                if index < len(self.textBuffer):
+                    index += 1
+                
+        sys.stdout.write(u"\u001b[1000D") # Move all the way left
     
-    def commandMode(self, textBuffer):
-        usrInput = input("\n\n:")
+    def commandMode(self):
+        self.columns, self.rows = os.get_terminal_size()
+        usrInput = input("\n" * self.rows + ":")
         if usrInput == "x":
             self.save()
         elif usrInput == "q":
             self.quit()
         elif usrInput == "w":
-            self.writeMode(textBuffer)
+            self.writeMode()
         else:
             print("\nSyntaxError: invalid syntax\n\t'{}' is not a valid command\n".format(usrInput))
             self.commandMode()
