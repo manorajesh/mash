@@ -2,6 +2,7 @@ import os
 import readchar as rc
 import sys
 import mash
+import tty
 
 def echo(usrInput):
     print(" ".join(usrInput.split()[1:]))
@@ -42,39 +43,44 @@ class Manote:
         self.file = open(self.filename, "w")
         self.file.write(self.textBuffer)
         self.file.close()
+        mash.main()
 
     def quit(self):
         print('\033[?25h', end="") # show cursor
         try:
             self.file.close()
+            mash.main()
         except (NameError, AttributeError):
-            pass
+            mash.main()
 
     def writeMode(self):
         keyInput = ''
         
         print('\033[?25l', end="") # remove cursor
-        index = 0
-        while keyInput == '' or keyInput != chr(27):
+        index = len(self.textBuffer)
+        while True:
             print("\033[2J\033[;H", end='') # clear the screen
-            print(self.textBuffer[index:] + "█")
+            print(self.textBuffer + "█")
             
             keyInput = rc.readkey()
 
             if keyInput == "\x7f":
                 self.textBuffer = self.textBuffer[:-1]
-                input -= 1
+                index = index - 1 if index > 0 else 0
             elif keyInput == "\r":
                 self.textBuffer += "\n"
+                index += 1
             elif keyInput == "\x1b[A":
-                if index > 0:
-                    index -= 1
+                index = index - 1 if index > 0 else 0
             elif keyInput == "\x1b[B":
                 if index < len(self.textBuffer):
                     index += 1
-            else:
-                self.textBuffer = self.textBuffer[index:] + keyInput + self.textBuffer[:index]
-        self.commandMode()
+            try:
+                if 32 <= ord(keyInput) <= 126:
+                    self.textBuffer = self.textBuffer[:index] + keyInput + self.textBuffer[index:]
+                    index += 1
+            except TypeError:
+                self.commandMode()
     
     def commandMode(self):
         print("\033[2J\033[;H", end='') # clear the screen
