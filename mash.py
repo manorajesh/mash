@@ -10,7 +10,7 @@ def main():
         while True:
             try:
                 usrInput = input(f"{os.getcwd()} @ mash ~ $ ")
-                if usrInput == "":
+                if usrInput == "" or usrInput.isspace():
                     continue
                 elif usrInput == "exit":
                     exit()

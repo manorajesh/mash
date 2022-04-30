@@ -1,8 +1,7 @@
 import os
 import readchar as rc
-import sys
 import mash
-import tty
+import time
 
 def echo(usrInput):
     print(" ".join(usrInput.split()[1:]))
@@ -54,33 +53,36 @@ class Manote:
             mash.main()
 
     def writeMode(self):
-        keyInput = ''
-        
         print('\033[?25l', end="") # remove cursor
         index = len(self.textBuffer)
         while True:
             print("\033[2J\033[;H", end='') # clear the screen
-            print(self.textBuffer + "█")
+            try:
+                print(self.textBuffer[:index] + u"\u001b[7m" + self.textBuffer[index] + "\u001b[0m" + self.textBuffer[index+1:])
+            except IndexError:
+                print(self.textBuffer + "█")
             
             keyInput = rc.readkey()
 
             if keyInput == "\x7f":
-                self.textBuffer = self.textBuffer[:-1]
+                self.textBuffer = self.textBuffer[:index-1] + self.textBuffer[index:]
                 index = index - 1 if index > 0 else 0
             elif keyInput == "\r":
                 self.textBuffer += "\n"
                 index += 1
-            elif keyInput == "\x1b[A":
+            elif keyInput == "\x1b[D":
                 index = index - 1 if index > 0 else 0
-            elif keyInput == "\x1b[B":
+            elif keyInput == "\x1b[C":
                 if index < len(self.textBuffer):
                     index += 1
-            try:
-                if 32 <= ord(keyInput) <= 126:
-                    self.textBuffer = self.textBuffer[:index] + keyInput + self.textBuffer[index:]
-                    index += 1
-            except TypeError:
-                self.commandMode()
+            else:
+                try:
+                    if 32 <= ord(keyInput) <= 126:
+                        self.textBuffer = self.textBuffer[:index] + keyInput + self.textBuffer[index:]
+                        index += 1
+                except TypeError:
+                    print('\033[?25h', end="") # show cursor
+                    self.commandMode()
     
     def commandMode(self):
         print("\033[2J\033[;H", end='') # clear the screen
@@ -93,14 +95,29 @@ class Manote:
             self.quit()
         elif usrInput == "w":
             self.writeMode()
+        elif usrInput == "h":
+            print("\nEnter w for write mode\nEnter q to quit\nEnter x to save and quit\nPress ESC twice to get to commands\n")
+            timeout()
+            self.commandMode()
         else:
-            print("\nSyntaxError: invalid syntax\n\t'{}' is not a valid command\n".format(usrInput))
+            print(f"\nmanote: invalid syntax\n\t'{usrInput}' is not a valid command\n")
+            timeout()
             self.commandMode()
     
     def syntaxHighlight(self, input):
         stripped = input.rstrip()
         return stripped + u"\u001b[41m" + " " *  (len(input) - len(stripped)) + u"\u001b[0m" 
 
+
+def timeout(given_timeout=5, division=5):
+    division = int(division)
+    duration = given_timeout/division
+    
+    print('\033[?25l', end="") # remove cursor
+    for i in range(division):
+        print(".", end='')
+        time.sleep(duration)
+    print('\033[?25h', end="") # show cursor
 
 def manote(filename):
     try:
