@@ -17,6 +17,8 @@ def help():
     cd - change the current working directory
     cls - clear the screen
     cat - display the contents of a file
+    python - run a python file
+    uname - display the system information
     """)
 
 ## Simple text editor
@@ -119,77 +121,12 @@ def timeout(given_timeout=5, division=5):
         time.sleep(duration)
     print('\033[?25h', end="") # show cursor
 
-def manote(filename):
-    try:
-        file = open(filename, "r")
-    except FileNotFoundError:
-        file = open(filename, "r+")
-    textBuffer = file.read()
-
-    keyInput = ''
-    # \x11 == CTRL-Q
-    # \x18 == CTRL-X
-    # Enter does not work properly
-
-    print('\033[?25l', end="") # remove cursor
-    while keyInput != rc.key.CTRL_Q or keyInput != rc.key.CTRL_X:
-        os.system("clear")
-        print(textBuffer + "█")
-        keyInput = rc.readkey()
-
-        if keyInput == "\x7f":
-            textBuffer = textBuffer[:-1]
-        elif keyInput == "\r":
-            textBuffer += "\n"
-        else:
-            textBuffer += keyInput
-    
-    # save file if combo was CRTL+X
-    # quit program if combo was CRTL+Q
-
-    print('\033[?25h', end="") # show cursor
-    if keyInput == rc.key.CTRL_X:
-        file.close()
-        file = open(filename, "w")
-        file.write(textBuffer)
-        file.close()
-    else:
-        file.close()
-        exit()
-
-def manote_deprecated(filename):
-    print("\nWelcome to the manote, your one stop-shop for text editing\n")
-    usrInput = ''
-    while True:
-        file = open(filename, "a")
-        usrInput = input(f"{os.path.abspath(filename)} ^ ")
-        if usrInput == "exit":
-            file.close()
-            exit()
-        elif usrInput == "help":
-            print("""
-            manote is a very simple text editor.\n
-            You can append text to the end of the file and preview the selected file\n
-            When the cursor is "^", you can enter text commands such as edit or preview\n
-            To enter edit mode, type "e" for edit. You will see the "+" cursor indicating edit mode.\n
-            To exit and save, press enter.\n
-            To preview the file, type "p" for preview.\n
-            To exit the program, type "q" to quit
-            """)
-        elif usrInput == "e":
-            usrInput = input(f"{os.path.abspath(filename)} + ")
-            file.write(usrInput)
-        elif usrInput == "p":
-            file = open(filename, "r")
-            print(file.read())
-        elif usrInput == "q":
-            file.close()
-            break
-        else:
-            print(f"\nmanote: unrecognized command\n\t'{usrInput}' is not a valid command\n")
-
 def ls(dirname=None):
-    print("\n".join(os.listdir(dirname)))
+    try:
+        print("\n".join(os.listdir(dirname)))
+    except FileNotFoundError:
+        print(f"\nDirectoryError: '{dirname}' does not exist\n")
+
 
 def rm(filename, force=False):
     if os.path.isdir(os.path.abspath(filename)):
@@ -230,6 +167,9 @@ def cat(filename):
 
 def python(filename):
     exec(open(filename).read())
+
+def uname():
+    print(" ".join(os.uname()))
 
 if __name__ == "__main__":
     mash.main()

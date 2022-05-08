@@ -5,6 +5,7 @@ import sys
 # MAno SHell - mash
 
 def main():
+    help_count = 0
     print("\033[2J\033[;H", end='') # clear the screen
     try:
         while True:
@@ -22,7 +23,7 @@ def main():
                     try:
                         manote = Manote(usrInput.split()[1])
                     except IndexError:
-                        print("\nSyntaxError: invalid syntax\n\t'manote' requires an argument\n")
+                        print(u"\u001b[41mSyntaxError:\u001b[0m" + " invalid syntax\n\t'manote' requires an argument\n")
                 elif usrInput.split()[0] == "ls":
                     try:
                         ls(usrInput.split()[1])
@@ -35,26 +36,31 @@ def main():
                         else:
                             rm(usrInput.split()[1])
                     except IndexError:
-                        print("\nSyntaxError: invalid syntax\n\t'rm' requires an argument or -f force flag\n")
+                        print(u"\u001b[41mSyntaxError:\u001b[0m" + " invalid syntax\n\t'rm' requires an argument or -f force flag\n")
                 elif usrInput.split()[0] == "cd":
                     try:
                         cd(usrInput.split()[1])
                     except IndexError:
-                        print("\nSyntaxError: invalid syntax\n\t'cd' requires an argument\n")
+                        print(u"\u001b[41mSyntaxError:\u001b[0m" + " invalid syntax\n\t'cd' requires an argument\n")
                 elif usrInput.split()[0] == "cat":
                     try:
                         cat(usrInput.split()[1])
                     except IndexError:
-                        print("\nSyntaxError: invalid syntax\n\t'cat' requires an argument\n")
+                        print(u"\u001b[41mSyntaxError:\u001b[0m" + " invalid syntax\n\t'cat' requires an argument\n")
                 elif usrInput.split()[0] == "cls" or usrInput.split()[0] == "clr" or usrInput.split()[0] == "clear":
                     cls()
                 elif usrInput.split()[0] == "python":
                     try:
                         python(usrInput.split()[1])
                     except IndexError:
-                        print("\nSyntaxError: invalid syntax\n\t'python' requires an argument\n")
+                        print(u"\u001b[41mSyntaxError:\u001b[0m" + " invalid syntax\n\t'python' requires an argument\n")
+                elif usrInput.split()[0] == "uname":
+                    uname()
                 else:
-                    print(f"\nSyntaxError: invalid syntax\n\t'{usrInput}' is not a valid command\n")
+                    print(u"\u001b[41mSyntaxError:\u001b[0m" + f" invalid syntax\n\t'{usrInput}' is not a valid command\n")
+                    if help_count % 3 == 0:
+                        print("\nType 'help' for a list of commands\n")
+                    help_count += 1
             except PermissionError:
                 print(f"\nPermissionError: cannot access '{usrInput.split()[1]}'\n")
     except KeyboardInterrupt:
