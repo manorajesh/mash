@@ -44,15 +44,13 @@ class Manote:
         self.file = open(self.filename, "w")
         self.file.write(self.textBuffer)
         self.file.close()
-        mash.main()
 
     def quit(self):
         print('\033[?25h', end="") # show cursor
         try:
             self.file.close()
-            mash.main()
-        except (NameError, AttributeError):
-            mash.main()
+        except (NameError, AttributeError): # if the file doesn't exist
+            pass
 
     def writeMode(self):
         print('\033[?25l', end="") # remove cursor
@@ -62,7 +60,7 @@ class Manote:
             try:
                 print(self.textBuffer[:index] + u"\u001b[7m" + self.textBuffer[index] + "\u001b[0m" + self.textBuffer[index+1:])
             except IndexError:
-                print(self.textBuffer + "█")
+                print(self.textBuffer + "█") # cursor is at the end of the line
             
             keyInput = rc.readkey()
 
@@ -84,34 +82,43 @@ class Manote:
                         index += 1
                 except TypeError:
                     print('\033[?25h', end="") # show cursor
-                    self.commandMode()
+                    break
     
     def commandMode(self):
-        print("\033[2J\033[;H", end='') # clear the screen
-        self.columns, self.lines = os.get_terminal_size()
-        print(self.textBuffer)
-        usrInput = input("\n" * self.lines + ":")
-        if usrInput == "x":
-            self.save()
-        elif usrInput == "q":
-            self.quit()
-        elif usrInput == "w":
-            self.writeMode()
-        elif usrInput == "h":
-            print("\nEnter w for write mode\nEnter q to quit\nEnter x to save and quit\nPress ESC twice to get to commands\n")
-            timeout()
-            self.commandMode()
-        else:
-            print(f"\nmanote: invalid syntax\n\t'{usrInput}' is not a valid command\n")
-            timeout()
-            self.commandMode()
-    
+        help_count = 1 # to see if the user is confused
+        while True:
+            print("\033[2J\033[;H", end='') # clear the screen
+            self.columns, self.lines = os.get_terminal_size()
+            print(self.textBuffer)
+            usrInput = input("\n" * self.lines + ":")
+            if usrInput == "x":
+                self.save()
+                break
+            elif usrInput == "q":
+                self.quit()
+                break
+            elif usrInput == "w":
+                self.writeMode()
+            elif usrInput == "h":
+                print("\nEnter w for write mode\nEnter q to quit\nEnter x to save and quit\nPress ESC twice to get to commands\n")
+                print("Press any key to continue...")
+                rc.readkey()
+            else:
+                print(f"\nmanote: invalid syntax\n\t'{usrInput}' is not a valid command\n")
+                print("Press any key to continue...")
+
+                if help_count % 4 == 0:
+                        print("\nType 'help' for a list of commands\n")
+                        help_count = 1 # reset the counter to 1 for security
+                help_count += 1
+                rc.readkey()
+        
     def syntaxHighlight(self, input):
         stripped = input.rstrip()
         return stripped + u"\u001b[41m" + " " *  (len(input) - len(stripped)) + u"\u001b[0m" 
 
 
-def timeout(given_timeout=5, division=5):
+def timeout(given_timeout=3, division=5):
     division = int(division)
     duration = given_timeout/division
     
