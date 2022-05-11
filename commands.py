@@ -90,6 +90,7 @@ class Manote:
             print("\033[2J\033[;H", end='') # clear the screen
             self.columns, self.lines = os.get_terminal_size()
             print(self.textBuffer)
+            self.lines = self.lines - self.textBuffer.count("\n") if self.textBuffer.count("\n") < self.lines else self.lines
             usrInput = input("\n" * self.lines + ":")
             if usrInput == "x":
                 self.save()
@@ -108,7 +109,7 @@ class Manote:
                 print("Press any key to continue...")
 
                 if help_count % 4 == 0:
-                        print("\nType 'help' for a list of commands\n")
+                        print("\nType 'h' for a list of commands\n")
                         help_count = 1 # reset the counter to 1 for security
                 help_count += 1
                 rc.readkey()
