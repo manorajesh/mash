@@ -56,6 +56,10 @@ def main():
                         print(u"\u001b[41mSyntaxError:\u001b[0m" + " invalid syntax\n\t'python' requires an argument\n")
                 elif usrInput.split()[0] == "uname":
                     uname()
+                elif usrInput.split()[0] == "version":
+                    version()
+                elif usrInput.split()[0] == "pwd":
+                    pwd()
                 else:
                     print(u"\u001b[41mSyntaxError:\u001b[0m" + f" invalid syntax\n\t'{usrInput}' is not a valid command\n")
                     if help_count % 3 == 0:

@@ -2,6 +2,7 @@ import os
 import readchar as rc
 import mash
 import time
+import git
 
 def echo(usrInput):
     print(" ".join(usrInput.split()[1:]))
@@ -178,6 +179,13 @@ def python(filename):
 
 def uname():
     print(" ".join(os.uname()))
+
+def version():
+    repo = git.Repo(os.path.dirname(os.path.realpath(__file__)))
+    print(f"mash v0.1.{len(list(repo.iter_commits()))}") # based on number of git commits on HEAD
+
+def pwd():
+    print(os.getcwd())
 
 if __name__ == "__main__":
     mash.main()
