@@ -20,6 +20,8 @@ def help():
     cat - display the contents of a file
     python - run a python file
     uname - display the system information
+    version - display the version of the program
+    pwd - display the current working directory
     """)
 
 ## Simple text editor
@@ -55,11 +57,14 @@ class Manote:
 
     def writeMode(self):
         print('\033[?25l', end="") # remove cursor
+        self.columns, self.lines = os.get_terminal_size()
         index = len(self.textBuffer)
+        start = 0
+        end = len(self.textBuffer)
         while True:
             print("\033[2J\033[;H", end='') # clear the screen
             try:
-                print(self.textBuffer[:index] + u"\u001b[7m" + self.textBuffer[index] + "\u001b[0m" + self.textBuffer[index+1:])
+                print(self.textBuffer[start:index] + u"\u001b[7m" + self.textBuffer[index] + "\u001b[0m" + self.textBuffer[index+1:end])
             except IndexError:
                 print(self.textBuffer + "█") # cursor is at the end of the line
             
@@ -76,6 +81,13 @@ class Manote:
             elif keyInput == "\x1b[C":
                 if index < len(self.textBuffer):
                     index += 1
+            elif keyInput == "\x1b[A":
+                index = index - self.columns if index > self.columns else 0
+                start = start - 1 if start > 0 else 0
+            elif keyInput == "\x1b[B":
+                index = index + self.columns if index < len(self.textBuffer) - self.columns else len(self.textBuffer)
+                end = end + 1 if end < len(self.textBuffer) else len(self.textBuffer)
+
             else:
                 try:
                     if 32 <= ord(keyInput) <= 126:
