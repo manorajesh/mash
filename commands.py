@@ -20,6 +20,8 @@ def help():
     cat - display the contents of a file
     python - run a python file
     uname - display the system information
+    version - display the version of the program
+    pwd - display the current working directory
     """)
 
 ## Simple text editor
